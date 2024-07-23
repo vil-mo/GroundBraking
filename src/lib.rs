@@ -1,34 +1,33 @@
 #![allow(clippy::type_complexity)]
 
-mod actions;
-mod audio;
-mod loading;
-mod menu;
-mod player;
+pub mod action_behaviour;
+pub mod actors;
+pub mod dynamic_initialization;
+pub mod input_map;
+pub mod menu_state;
+pub mod playing_state;
 
-use crate::actions::ActionsPlugin;
-use crate::audio::InternalAudioPlugin;
-use crate::loading::LoadingPlugin;
-use crate::menu::MenuPlugin;
-use crate::player::PlayerPlugin;
-
-use bevy::app::App;
-#[cfg(debug_assertions)]
-use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
+use crate::{
+    action_behaviour::ActionBehaviourPlugin, actors::RegisterActors, input_map::InputMapPlugin,
+    menu_state::MenuPlugin,
+};
+use avian2d::prelude::*;
+// #[cfg(debug_assertions)]
+// use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::prelude::*;
+use playing_state::PlayingPlugin;
 
 // This example game uses States to separate logic
 // See https://bevy-cheatbook.github.io/programming/states.html
 // Or https://github.com/bevyengine/bevy/blob/main/examples/ecs/state.rs
 #[derive(States, Default, Clone, Eq, PartialEq, Debug, Hash)]
 enum GameState {
-    // During the loading State the LoadingPlugin will load our assets
+    // Here the menu is drawn and waiting for player interaction
     #[default]
-    Loading,
+    Menu,
+
     // During this State the actual game logic is executed
     Playing,
-    // Here the menu is drawn and waiting for player interaction
-    Menu,
 }
 
 pub struct GamePlugin;
@@ -36,16 +35,17 @@ pub struct GamePlugin;
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app.init_state::<GameState>().add_plugins((
-            LoadingPlugin,
+            PhysicsPlugins::default(),
             MenuPlugin,
-            ActionsPlugin,
-            InternalAudioPlugin,
-            PlayerPlugin,
+            PlayingPlugin,
+            InputMapPlugin,
+            ActionBehaviourPlugin,
+            RegisterActors,
         ));
 
         #[cfg(debug_assertions)]
         {
-            app.add_plugins((FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin::default()));
+            //app.add_plugins((FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin::default()));
         }
     }
 }

@@ -3,6 +3,7 @@
 
 use bevy::asset::AssetMetaCheck;
 use bevy::prelude::*;
+use bevy::render::camera::ScalingMode;
 use bevy::window::PrimaryWindow;
 use bevy::winit::WinitWindows;
 use bevy::DefaultPlugins;
@@ -13,7 +14,11 @@ use winit::window::Icon;
 fn main() {
     App::new()
         .insert_resource(Msaa::Off)
-        .insert_resource(ClearColor(Color::linear_rgb(0.4, 0.4, 0.4)))
+        .insert_resource(ClearColor(Color::linear_rgb(
+            14. / 255.,
+            7. / 255.,
+            27. / 255.,
+        )))
         .add_plugins(
             DefaultPlugins
                 .set(WindowPlugin {
@@ -31,10 +36,11 @@ fn main() {
                 .set(AssetPlugin {
                     meta_check: AssetMetaCheck::Never,
                     ..default()
-                }),
+                })
+                .set(ImagePlugin::default_nearest()),
         )
         .add_plugins(GamePlugin)
-        .add_systems(Startup, set_window_icon)
+        .add_systems(Startup, (set_window_icon, setup_camera))
         .run();
 }
 
@@ -57,4 +63,16 @@ fn set_window_icon(
         let icon = Icon::from_rgba(rgba, width, height).unwrap();
         primary.set_window_icon(Some(icon));
     };
+}
+
+fn setup_camera(mut commands: Commands) {
+    commands.spawn(Camera2dBundle {
+        projection: OrthographicProjection {
+            far: 1000.,
+            near: -1000.,
+            scaling_mode: ScalingMode::WindowSize(4.),
+            ..default()
+        },
+        ..default()
+    });
 }
