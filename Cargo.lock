@@ -595,21 +595,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bevy_game"
-version = "0.1.0"
-dependencies = [
- "avian2d",
- "bevy",
- "bevy_consumable_event",
- "bevy_kira_audio",
- "embed-resource",
- "image",
- "log",
- "rand",
- "winit",
-]
-
-[[package]]
 name = "bevy_gilrs"
 version = "0.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2162,6 +2147,21 @@ name = "grid"
 version = "0.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "be136d9dacc2a13cc70bb6c8f902b414fb2641f8db1314637c6b7933411a8f82"
+
+[[package]]
+name = "ground_breaking"
+version = "0.1.0"
+dependencies = [
+ "avian2d",
+ "bevy",
+ "bevy_consumable_event",
+ "bevy_kira_audio",
+ "embed-resource",
+ "image",
+ "log",
+ "rand",
+ "winit",
+]
 
 [[package]]
 name = "guillotiere"

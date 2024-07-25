@@ -1,9 +1,7 @@
-use super::{
-    utils::{ActorEntityCommands, Alignment},
-    Actor, AppRegisteringActors,
-};
-use crate::action_behaviour::{
-    actions::movement::MovementAction, behaviours::player::PlayerBehaviour,
+use super::{Actor, AppRegisteringActors};
+use crate::{
+    action_behaviour::{actions::movement::MovementAction, behaviours::player::PlayerBehaviour},
+    common::colliders::{Alignment, CollidersCommands},
 };
 use avian2d::collision::Collider;
 use bevy::{ecs::system::SystemParam, prelude::*};
@@ -21,9 +19,9 @@ pub struct Player {
 }
 
 impl Actor for Player {
-    type Param<'w, 's> = (Commands<'w, 's>, Res<'w, AssetServer>);
+    type Param = (Commands<'static, 'static>, Res<'static, AssetServer>);
 
-    fn spawn(self, param: <Self::Param<'_, '_> as SystemParam>::Item<'_, '_>) {
+    fn spawn(self, param: <Self::Param as SystemParam>::Item<'_, '_>) {
         info!("Spawn player");
 
         let (mut commands, asset_server) = param;

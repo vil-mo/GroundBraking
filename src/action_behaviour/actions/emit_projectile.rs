@@ -9,32 +9,32 @@ use crate::{
 // Already registered in `register_actor`
 
 #[derive(Component)]
-pub struct EmitProjectileAction<T: Actor> {
+pub struct EmitProjectile<T: Actor> {
     should_emit: Vec<T>,
 }
 
-impl<T: Actor> Default for EmitProjectileAction<T> {
+impl<T: Actor> Default for EmitProjectile<T> {
     fn default() -> Self {
-        EmitProjectileAction {
+        EmitProjectile {
             should_emit: Vec::new(),
         }
     }
 }
 
-impl<T: Actor> EmitProjectileAction<T> {
+impl<T: Actor> EmitProjectile<T> {
     pub fn emit(&mut self, projectile: T) {
         self.should_emit.push(projectile);
     }
 }
 
-impl<T: Actor> Action for EmitProjectileAction<T> {
+impl<T: Actor> Action for EmitProjectile<T> {
     fn systems() -> bevy::ecs::schedule::SystemConfigs {
         apply_emit_projectile::<T>.into_configs()
     }
 }
 
 fn apply_emit_projectile<T: Actor>(
-    mut query: Query<&mut EmitProjectileAction<T>>,
+    mut query: Query<&mut EmitProjectile<T>>,
     mut event: ConsumableEventWriter<SpawnActor<T>>,
 ) {
     for mut action in query.iter_mut() {

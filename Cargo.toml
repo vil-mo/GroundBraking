@@ -1,5 +1,5 @@
 [package]
-name = "bevy_game" # ToDo
+name = "ground_breaking"
 version = "0.1.0"
 publish = false
 authors = ["vil'mo"]

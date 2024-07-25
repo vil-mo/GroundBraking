@@ -3,11 +3,11 @@ use std::ops::Not;
 use avian2d::prelude::*;
 use bevy::{ecs::system::EntityCommands, prelude::*, utils::Duration};
 
-pub struct ActorUtilsPlugin;
+pub struct CollidersPlugin;
 
-impl Plugin for ActorUtilsPlugin {
+impl Plugin for CollidersPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, (tick_fade_away, tick_disable_collider_on_time));
+        app.add_systems(Update, tick_disable_collider_on_time);
     }
 }
 
@@ -59,7 +59,7 @@ pub enum CollisionMask {
     EnemyHurtbox,
 }
 
-pub trait ActorEntityCommands {
+pub trait CollidersCommands {
     fn with_hitbox(&mut self, alignment: Alignment, hitbox: Collider) -> &mut Self;
 
     fn with_hitbox_for(
@@ -78,11 +78,9 @@ pub trait ActorEntityCommands {
     /// Projectiles detect collisoions with walls (may pass through them).
     /// Kinematic Rigidbodies
     fn projectile_with_hitbox(&mut self, alignment: Alignment, hitbox: Collider) -> &mut Self;
-
-    fn fade_away(&mut self, lifetime: Duration) -> &mut Self;
 }
 
-impl ActorEntityCommands for EntityCommands<'_> {
+impl CollidersCommands for EntityCommands<'_> {
     fn with_hitbox(&mut self, alignment: Alignment, hitbox: Collider) -> &mut Self {
         let hitbox_collision_layers =
             CollisionLayers::new(alignment.hitbox(), (!alignment).hurtbox());
@@ -155,48 +153,6 @@ impl ActorEntityCommands for EntityCommands<'_> {
             hitbox_collision_layers,
         ))
     }
-
-    #[inline]
-    fn fade_away(&mut self, lifetime: Duration) -> &mut Self {
-        self.insert(FadeAway {
-            timer: Timer::new(lifetime, TimerMode::Once),
-        })
-    }
-}
-
-#[derive(Component)]
-pub struct FadeAway {
-    timer: Timer,
-}
-
-fn tick_fade_away(
-    time: Res<Time>,
-    mut query: Query<(
-        Entity,
-        &mut FadeAway,
-        Option<&mut Sprite>,
-        Option<&Handle<ColorMaterial>>,
-    )>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
-    mut commands: Commands,
-) {
-    for (entity, mut fade, sprite, material_handle) in query.iter_mut() {
-        if fade.timer.finished() {
-            commands.entity(entity).despawn_recursive();
-            return;
-        }
-
-        fade.timer.tick(time.delta());
-        let new_alpha = 1. - fade.timer.fraction();
-        if let Some(mut sprite) = sprite {
-            sprite.color.set_alpha(new_alpha);
-        }
-        if let Some(material_handle) = material_handle {
-            if let Some(material) = materials.get_mut(material_handle) {
-                material.color.set_alpha(new_alpha);
-            }
-        }
-    }
 }
 
 /// Disales collider by switching it's layers to [`CollisionLayers::NONE`]
@@ -210,11 +166,8 @@ fn tick_disable_collider_on_time(
     mut query: Query<(&mut DisableColliderOnTimer, &mut CollisionLayers)>,
 ) {
     for (mut timer, mut layers) in query.iter_mut() {
-        if timer.timer.finished() {
-            if timer.timer.just_finished() {
-                *layers = CollisionLayers::NONE;
-            }
-            return;
+        if timer.timer.just_finished() {
+            *layers = CollisionLayers::NONE;
         }
 
         timer.timer.tick(time.delta());

@@ -10,20 +10,41 @@ impl Plugin for InputMapPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<InputMap>().add_systems(
             Update,
-            set_movement_direction.run_if(in_state(GameState::Playing)),
+            (set_movement_direction, set_destroy_tile).run_if(in_state(GameState::Playing)),
         );
     }
 }
 
 #[derive(Default, Resource)]
 pub struct InputMap {
-    pub movement_direction: Vec2,
+    movement_direction: Vec2,
+    destroy_tile: bool,
 }
 
-fn set_movement_direction(
-    mut actions: ResMut<InputMap>,
-    keyboard_input: Res<ButtonInput<KeyCode>>,
-) {
+impl InputMap {
+    #[inline]
+    pub fn movement_direction(&self) -> Vec2 {
+        self.movement_direction
+    }
+
+    #[inline]
+    pub fn destroy_tile(&mut self) -> bool {
+        if self.destroy_tile {
+            self.destroy_tile = false;
+            true
+        } else {
+            false
+        }
+    }
+}
+
+fn set_destroy_tile(mut map: ResMut<InputMap>, keyboard_input: Res<ButtonInput<KeyCode>>) {
+    map.destroy_tile = map.destroy_tile
+        || keyboard_input.just_pressed(KeyCode::KeyK)
+        || keyboard_input.just_pressed(KeyCode::KeyX);
+}
+
+fn set_movement_direction(mut map: ResMut<InputMap>, keyboard_input: Res<ButtonInput<KeyCode>>) {
     let player_movement = Vec2::new(
         get_movement(Direction::Right, &keyboard_input)
             - get_movement(Direction::Left, &keyboard_input),
@@ -31,7 +52,7 @@ fn set_movement_direction(
             - get_movement(Direction::Down, &keyboard_input),
     );
 
-    actions.movement_direction = player_movement.normalize_or_zero();
+    map.movement_direction = player_movement.normalize_or_zero();
 }
 
 enum Direction {
